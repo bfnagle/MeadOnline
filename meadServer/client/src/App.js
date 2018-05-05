@@ -58,7 +58,7 @@ class App extends Component
       {
         csvData.push({'Sample Time': batchData[i].x, 'temperature (F)': batchData[i].y});
       }
-       
+
       try
       {
         const parser = new Json2csvParser(csvData);
@@ -68,7 +68,7 @@ class App extends Component
         csvContent += csv;
 
         var encodedUri = encodeURI(csvContent);
-        // window.open(encodedUri);
+
         var link = document.createElement("a");
         link.setAttribute("href", encodedUri);
         link.setAttribute("download", this.selected + ".csv");
@@ -85,7 +85,6 @@ class App extends Component
   }
 
 
-  // updateSelected(newSelection)
   updateSelected = (newSelection) =>
   {
     this.selected = newSelection;
