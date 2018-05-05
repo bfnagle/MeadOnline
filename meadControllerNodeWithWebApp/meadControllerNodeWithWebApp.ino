@@ -10,13 +10,13 @@ const float tempLow = 20;   //Celcius
 
 Adafruit_MCP9808 tempsensor = Adafruit_MCP9808();
 
-const char* ssid     = "YourWifiNetwork";
-const char* password = "YourWifiPassword";
+const char* ssid     = "WifiName";
+const char* password = "Password";
 
 ESP8266WiFiMulti WiFiMulti;
 
-const char* host = "hostname";
-const char* fingerprint = "security fingerprint for an HTTPS website";
+const char* host = "https://yourwebsite.com";
+const char* fingerprint = "hex key";
 const int port = 5000;
 
 const char* batchName = "code_test";
@@ -33,8 +33,7 @@ enum state
 
 state fridgeState = off;
 
-//Start at 59 so that we print right away on boot
-int writeCounter = 59;
+int writeCounter = 0;
 
 void setup()
 {
@@ -53,32 +52,30 @@ void setup()
 
 void loop()
 {
-  writeCounter++;
   tempsensor.wake();   // wake up, ready to read!
   float c = tempsensor.readTempC();
+  float f = (c * 1.8) + 32;
 
-  root["temp"] = int(c);
+  root["temp"] = int(f);
 
   String serializedJSON;
   root.printTo(serializedJSON);
 
   //Only write once every 5 minutes
-  if (writeCounter == 60)
+  if (writeCounter == 0)
   {
-    writeCounter = 0;
-    
     if (WiFiMulti.run() == WL_CONNECTED)
-    {  
-      HTTPClient http;   
+    {
+      HTTPClient http;
       http.begin(host, fingerprint);
-      
+
       http.addHeader("Content-Type", "application/json");  //Specify content-type header
       int httpCode = http.PUT(serializedJSON);
-    
+
       http.end();
     }
   }
-  
+
   switch (fridgeState)
   {
     case on:
@@ -108,6 +105,9 @@ void loop()
       digitalWrite(relay, LOW);
     }
   }
+
+  writeCounter++;
+  writeCounter %= 60;
 
   delay(5000);
 }
